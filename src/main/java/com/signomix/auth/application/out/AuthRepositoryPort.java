@@ -1,6 +1,9 @@
 package com.signomix.auth.application.out;
 
+import org.jboss.logging.Logger;
+
 import com.signomix.auth.adapter.out.AuthRepository;
+import com.signomix.common.Token;
 import com.signomix.common.User;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -11,10 +14,16 @@ public class AuthRepositoryPort implements AuthPortIface {
 
     @Inject
     AuthRepository authRepository;
+    @Inject
+    Logger logger;
 
     @Override
-    public String createSessionToken(User user) {
-        return authRepository.createSessionToken(user);
+    public Token createSessionToken(User user, long lifetime) {
+        logger.info("createSessionToken: " + user.uid + " " + lifetime);
+        Token token = authRepository.createTokenForUser(user, user.uid, lifetime, false);
+        
+        logger.info("created user: " + authRepository.getUser(token.getToken()));
+        return token;
     }
 
     @Override
@@ -32,10 +41,20 @@ public class AuthRepositoryPort implements AuthPortIface {
         return authRepository.getUserById(uid);
     }
 
+
     @Override
-    public String getSessionToken(String login, String password) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getSessionToken'");
+    public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent) {
+        User user = authRepository.getUserById(uid);
+        if (user != null) {
+            Token token = authRepository.createTokenForUser(issuer, user.uid, lifetime, permanent);
+            token.setIssuer(issuer.uid);
+            return token;
+        } else {
+            return null;
+        }
+        
     }
+
+
     
 }

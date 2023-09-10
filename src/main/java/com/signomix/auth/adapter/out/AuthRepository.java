@@ -1,8 +1,12 @@
 package com.signomix.auth.adapter.out;
 
+import java.sql.DatabaseMetaData;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
 
 import com.signomix.auth.application.out.AuthPortIface;
+import com.signomix.common.Token;
 import com.signomix.common.User;
 import com.signomix.common.db.AuthDao;
 import com.signomix.common.db.AuthDaoIface;
@@ -18,7 +22,10 @@ import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 
 @ApplicationScoped
-public class AuthRepository implements AuthPortIface{
+public class AuthRepository implements AuthPortIface {
+
+    @Inject
+    Logger logger;
 
     @Inject
     @DataSource("user")
@@ -34,7 +41,7 @@ public class AuthRepository implements AuthPortIface{
     @ConfigProperty(name = "signomix.exception.api.unauthorized")
     String userNotAuthorizedException;
 
-    //TODO: throwing exceptions
+    // TODO: throwing exceptions
 
     void onStart(@Observes StartupEvent ev) {
         userDao = new UserDao();
@@ -43,19 +50,21 @@ public class AuthRepository implements AuthPortIface{
         authDao.setDatasource(authDataSource);
     }
 
-    @Override
-    public String getSessionToken(String login, String password) {
-        User user;
-        try {
-            user = userDao.getUser(login, password);
-        } catch (IotDatabaseException e) {
-            throw new RuntimeException(userNotAuthorizedException);
-        }
-        if(user==null){
-            throw new RuntimeException(userNotAuthorizedException);
-        }
-        return authDao.createSession(user);
-    }
+    /*
+     * @Override
+     * public String getSessionToken(String login, String password) {
+     * User user;
+     * try {
+     * user = userDao.getUser(login, password);
+     * } catch (IotDatabaseException e) {
+     * throw new RuntimeException(userNotAuthorizedException);
+     * }
+     * if(user==null){
+     * throw new RuntimeException(userNotAuthorizedException);
+     * }
+     * return authDao.createSession(user);
+     * }
+     */
 
     @Override
     public void removeSession(String token) {
@@ -65,7 +74,9 @@ public class AuthRepository implements AuthPortIface{
     @Override
     public User getUser(String token) {
         try {
-            return userDao.getUser(authDao.getUser(token));
+            String uid = authDao.getUser(token);
+            logger.info("getUser: " + uid);
+            return userDao.getUser(uid);
         } catch (IotDatabaseException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -84,9 +95,42 @@ public class AuthRepository implements AuthPortIface{
         }
     }
 
+    /*
+     * @Override
+     * public Token createSessionToken(User user) {
+     * return authDao.createSession(user, 0L);
+     * }
+     */
+
     @Override
-    public String createSessionToken(User user) {
-        return authDao.createSession(user);
+    public Token createSessionToken(User user, long lifetime) {
+        logger.info("createSessionToken: " + user.uid);
+        try {
+            DatabaseMetaData metadata = authDao.getDataSource().getConnection().getMetaData();
+            System.out.println("Connected to " + metadata.getDatabaseProductName() + " " + metadata.getDatabaseProductVersion());
+            System.out.println(metadata.getDriverName() + " " + metadata.getDriverVersion());
+            System.out.println(metadata.getURL());
+            System.out.println(metadata.getUserName());
+        } catch (Exception ex) {
+            logger.error("DB connection problem.");
+            ex.printStackTrace();
+        }
+        return authDao.createSession(user, lifetime);
     }
-    
+
+    @Override
+    public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent) {
+        try {
+            DatabaseMetaData metadata = authDao.getDataSource().getConnection().getMetaData();
+            System.out.println("Connected to " + metadata.getDatabaseProductName() + " " + metadata.getDatabaseProductVersion());
+            System.out.println(metadata.getDriverName() + " " + metadata.getDriverVersion());
+            System.out.println(metadata.getURL());
+            System.out.println(metadata.getUserName());
+        } catch (Exception ex) {
+            logger.error("DB connection problem.");
+            ex.printStackTrace();
+        }
+        return authDao.createTokenForUser(issuer, uid, lifetime, permanent);
+    }
+
 }
