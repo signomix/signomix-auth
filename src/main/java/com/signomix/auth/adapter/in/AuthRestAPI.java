@@ -55,12 +55,12 @@ public class AuthRestAPI {
         return Response.ok().entity(token).build();
     }
 
-    @GET
+/*     @GET
     public Response getSessionTokenForUser(@HeaderParam("token") String token, @QueryParam("uid") String uid, @QueryParam("permanent") boolean permanent) {
         User user=authPort.getUser(token);
         String newToken = authPort.getTokenForUser(user, uid, permanent);
         return Response.ok().entity(newToken).build();
-    }
+    } */
 
     @GET
     @Path("/{token}")

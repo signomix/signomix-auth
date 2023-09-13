@@ -17,14 +17,14 @@ public class AuthRepositoryPort implements AuthPortIface {
     @Inject
     Logger logger;
 
-    @Override
+/*     @Override
     public Token createSessionToken(User user, long lifetime) {
         logger.info("createSessionToken: " + user.uid + " " + lifetime);
         Token token = authRepository.createTokenForUser(user, user.uid, lifetime, false);
         
         logger.info("created user: " + authRepository.getUser(token.getToken()));
         return token;
-    }
+    } */
 
     @Override
     public void removeSession(String token) {
@@ -32,8 +32,8 @@ public class AuthRepositoryPort implements AuthPortIface {
     }
 
     @Override
-    public User getUser(String token) {
-        return authRepository.getUser(token);
+    public User getUser(String token, long sessionTokenLifetime, long permanentTokenLifetime) {
+        return authRepository.getUser(token, sessionTokenLifetime, permanentTokenLifetime);
     }
 
     @Override
@@ -43,10 +43,11 @@ public class AuthRepositoryPort implements AuthPortIface {
 
 
     @Override
-    public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent) {
+    public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent, long sessionTokenLifetime,
+            long permanentTokenLifetime) {
         User user = authRepository.getUserById(uid);
         if (user != null) {
-            Token token = authRepository.createTokenForUser(issuer, user.uid, lifetime, permanent);
+            Token token = authRepository.createTokenForUser(issuer, user.uid, lifetime, permanent, sessionTokenLifetime, permanentTokenLifetime);
             token.setIssuer(issuer.uid);
             return token;
         } else {

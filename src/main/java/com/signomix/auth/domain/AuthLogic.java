@@ -17,21 +17,23 @@ public class AuthLogic {
     @Inject
     AuthRepositoryPort authRepositoryPort;
 
+    // TODO: move to config
     private long sessionTokenLifetime = 30; // minutes
     private long permanentTokenLifetime = 10* 365 * 24 * 60; // 10 years in minutes
 
-    public String getSessionToken(String login, String password) {
+     public String getSessionToken(String login, String password) {
         logger.info("getSessionToken: " + login + " " + password);
         User user = authRepositoryPort.getUserById(login);
         if (user != null && user.checkPassword(password) && (user.authStatus == User.IS_ACTIVE || user.authStatus==User.IS_CREATED)) {
-            return authRepositoryPort.createSessionToken(user, sessionTokenLifetime).getToken();
+            //return authRepositoryPort.createSessionToken(user, sessionTokenLifetime).getToken();
+            return authRepositoryPort.createTokenForUser(user, user.uid, sessionTokenLifetime, false, sessionTokenLifetime, permanentTokenLifetime).getToken();
         } else {
             return null;
         }
     }
 
     public User getUser(String token) {
-        return authRepositoryPort.getUser(token);
+        return authRepositoryPort.getUser(token, sessionTokenLifetime, permanentTokenLifetime);
     }
 
     public void removeSession(String token) {
@@ -39,8 +41,8 @@ public class AuthLogic {
     }
 
     public String createTokenForUser(User issuer, String uid, boolean permanent) {
-        String token = authRepositoryPort.createTokenForUser(issuer, uid, permanent?permanentTokenLifetime:sessionTokenLifetime, permanent).getToken();
-        User user=authRepositoryPort.getUser(token);
+        String token = authRepositoryPort.createTokenForUser(issuer, uid, permanent?permanentTokenLifetime:sessionTokenLifetime, permanent, sessionTokenLifetime, permanentTokenLifetime).getToken();
+        User user=authRepositoryPort.getUser(token, sessionTokenLifetime, permanentTokenLifetime);
         logger.info("created token: "+user.uid+" "+user.authStatus);
         
         return token;

@@ -72,9 +72,9 @@ public class AuthRepository implements AuthPortIface {
     }
 
     @Override
-    public User getUser(String token) {
+    public User getUser(String token, long sessionTokenLifetime, long permanentTokenLifetime) {
         try {
-            String uid = authDao.getUser(token);
+            String uid = authDao.getUserId(token, sessionTokenLifetime, permanentTokenLifetime);
             logger.info("getUser: " + uid);
             return userDao.getUser(uid);
         } catch (IotDatabaseException e) {
@@ -102,25 +102,15 @@ public class AuthRepository implements AuthPortIface {
      * }
      */
 
-    @Override
+/*     @Override
     public Token createSessionToken(User user, long lifetime) {
         logger.info("createSessionToken: " + user.uid);
-        try {
-            DatabaseMetaData metadata = authDao.getDataSource().getConnection().getMetaData();
-            System.out.println("Connected to " + metadata.getDatabaseProductName() + " " + metadata.getDatabaseProductVersion());
-            System.out.println(metadata.getDriverName() + " " + metadata.getDriverVersion());
-            System.out.println(metadata.getURL());
-            System.out.println(metadata.getUserName());
-        } catch (Exception ex) {
-            logger.error("DB connection problem.");
-            ex.printStackTrace();
-        }
         return authDao.createSession(user, lifetime);
-    }
+    } */
 
     @Override
-    public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent) {
-        try {
+    public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent, long sessionTokenLifetime, long permanentTokenLifetime) {
+/*         try {
             DatabaseMetaData metadata = authDao.getDataSource().getConnection().getMetaData();
             System.out.println("Connected to " + metadata.getDatabaseProductName() + " " + metadata.getDatabaseProductVersion());
             System.out.println(metadata.getDriverName() + " " + metadata.getDriverVersion());
@@ -129,7 +119,7 @@ public class AuthRepository implements AuthPortIface {
         } catch (Exception ex) {
             logger.error("DB connection problem.");
             ex.printStackTrace();
-        }
+        } */
         return authDao.createTokenForUser(issuer, uid, lifetime, permanent);
     }
 
