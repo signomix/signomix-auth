@@ -2,6 +2,7 @@ package com.signomix.auth.adapter.out;
 
 import java.sql.DatabaseMetaData;
 
+import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
@@ -41,8 +42,6 @@ public class AuthRepository implements AuthPortIface {
     @ConfigProperty(name = "signomix.exception.api.unauthorized")
     String userNotAuthorizedException;
 
-    // TODO: throwing exceptions
-
     void onStart(@Observes StartupEvent ev) {
         userDao = new UserDao();
         userDao.setDatasource(userDataSource);
@@ -50,21 +49,16 @@ public class AuthRepository implements AuthPortIface {
         authDao.setDatasource(authDataSource);
     }
 
-    /*
-     * @Override
-     * public String getSessionToken(String login, String password) {
-     * User user;
-     * try {
-     * user = userDao.getUser(login, password);
-     * } catch (IotDatabaseException e) {
-     * throw new RuntimeException(userNotAuthorizedException);
-     * }
-     * if(user==null){
-     * throw new RuntimeException(userNotAuthorizedException);
-     * }
-     * return authDao.createSession(user);
-     * }
-     */
+    private boolean isPostgres() {
+        String dbKind = ConfigProvider.getConfig().getValue("quarkus.datasource.db-kind", String.class);
+        if (dbKind.equals("postgresql")) {
+            return true;
+        } else if (dbKind.equals("h2")) {
+            return false;
+        } else {
+            throw new RuntimeException("Unknown database type: " + dbKind);
+        }
+    }
 
     @Override
     public void removeSession(String token) {
@@ -95,31 +89,9 @@ public class AuthRepository implements AuthPortIface {
         }
     }
 
-    /*
-     * @Override
-     * public Token createSessionToken(User user) {
-     * return authDao.createSession(user, 0L);
-     * }
-     */
-
-/*     @Override
-    public Token createSessionToken(User user, long lifetime) {
-        logger.info("createSessionToken: " + user.uid);
-        return authDao.createSession(user, lifetime);
-    } */
-
     @Override
-    public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent, long sessionTokenLifetime, long permanentTokenLifetime) {
-/*         try {
-            DatabaseMetaData metadata = authDao.getDataSource().getConnection().getMetaData();
-            System.out.println("Connected to " + metadata.getDatabaseProductName() + " " + metadata.getDatabaseProductVersion());
-            System.out.println(metadata.getDriverName() + " " + metadata.getDriverVersion());
-            System.out.println(metadata.getURL());
-            System.out.println(metadata.getUserName());
-        } catch (Exception ex) {
-            logger.error("DB connection problem.");
-            ex.printStackTrace();
-        } */
+    public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent,
+            long sessionTokenLifetime, long permanentTokenLifetime) {
         return authDao.createTokenForUser(issuer, uid, lifetime, permanent);
     }
 
