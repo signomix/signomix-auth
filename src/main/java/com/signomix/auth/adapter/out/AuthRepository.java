@@ -1,18 +1,13 @@
 package com.signomix.auth.adapter.out;
 
-import java.sql.DatabaseMetaData;
-
-import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import com.signomix.auth.application.out.AuthPortIface;
 import com.signomix.common.Token;
 import com.signomix.common.User;
-import com.signomix.common.db.AuthDao;
 import com.signomix.common.db.AuthDaoIface;
 import com.signomix.common.db.IotDatabaseException;
-import com.signomix.common.db.UserDao;
 import com.signomix.common.db.UserDaoIface;
 
 import io.agroal.api.AgroalDataSource;
@@ -36,27 +31,51 @@ public class AuthRepository implements AuthPortIface {
     @DataSource("auth")
     AgroalDataSource authDataSource;
 
+    @Inject
+    @DataSource("oltp")
+    AgroalDataSource mainDataSource;
+
     UserDaoIface userDao;
     AuthDaoIface authDao;
 
     @ConfigProperty(name = "signomix.exception.api.unauthorized")
     String userNotAuthorizedException;
+    @ConfigProperty(name = "signomix.database.type")
+    String databaseType;
 
     void onStart(@Observes StartupEvent ev) {
-        userDao = new UserDao();
-        userDao.setDatasource(userDataSource);
-        authDao = new AuthDao();
-        authDao.setDatasource(authDataSource);
-    }
-
-    private boolean isPostgres() {
-        String dbKind = ConfigProvider.getConfig().getValue("quarkus.datasource.db-kind", String.class);
-        if (dbKind.equals("postgresql")) {
-            return true;
-        } else if (dbKind.equals("h2")) {
-            return false;
+        if (databaseType.equalsIgnoreCase("postgresql")) {
+            userDao = new com.signomix.common.tsdb.UserDao();
+            userDao.setDatasource(mainDataSource);
+            authDao = new com.signomix.common.tsdb.AuthDao();
+            authDao.setDatasource(mainDataSource);
         } else {
-            throw new RuntimeException("Unknown database type: " + dbKind);
+            userDao = new com.signomix.common.db.UserDao();
+            userDao.setDatasource(userDataSource);
+            authDao = new com.signomix.common.db.AuthDao();
+            authDao.setDatasource(authDataSource);
+        }
+        boolean ok = false;
+        int counter = 0;
+        int maxTries = 30;
+        while (!ok && counter < maxTries) {
+            logger.info("DB connection try: " + counter);
+            try {
+                userDao.createStructure();
+                authDao.createStructure();
+                ok = true;
+            } catch (Exception e) {
+                logger.error("DB connection problem.");
+                e.printStackTrace();
+            }
+            if(!ok){
+                counter++;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
