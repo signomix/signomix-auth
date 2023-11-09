@@ -26,6 +26,9 @@ public class AuthPort {
     }
 
     public User getUser(String token) {
+        if(token!=null && token.endsWith("/")){
+            token=token.substring(0,token.length()-1);
+        }
         return authLogic.getUser(token);
     }
 
