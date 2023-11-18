@@ -24,10 +24,19 @@ public class AuthLogic {
      public String getSessionToken(String login, String password) {
         logger.info("getSessionToken: " + login + " " + password);
         User user = authRepositoryPort.getUserById(login);
-        if (user != null && user.checkPassword(password) && (user.authStatus == User.IS_ACTIVE || user.authStatus==User.IS_CREATED)) {
+        if(user==null){
+            logger.info("user not found: " + login);
+            return null;
+        }
+        if(!user.checkPassword(password)){
+            logger.info("wrong password: " + login);
+            return null;
+        }
+        if (user.authStatus == User.IS_ACTIVE || user.authStatus==User.IS_CREATED) {
             //return authRepositoryPort.createSessionToken(user, sessionTokenLifetime).getToken();
             return authRepositoryPort.createTokenForUser(user, user.uid, sessionTokenLifetime, false, sessionTokenLifetime, permanentTokenLifetime).getToken();
         } else {
+            logger.info("user not active: " + login + " status: " + user.authStatus);
             return null;
         }
     }

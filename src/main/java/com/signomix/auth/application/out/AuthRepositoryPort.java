@@ -51,6 +51,7 @@ public class AuthRepositoryPort implements AuthPortIface {
             token.setIssuer(issuer.uid);
             return token;
         } else {
+            logger.info("user not found: " + uid);
             return null;
         }
         
