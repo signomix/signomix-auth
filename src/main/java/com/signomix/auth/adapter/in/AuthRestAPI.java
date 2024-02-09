@@ -7,6 +7,7 @@ import org.jboss.logging.Logger;
 import com.signomix.auth.application.in.AuthPort;
 import com.signomix.common.User;
 
+import io.vertx.ext.web.RoutingContext;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -25,6 +26,8 @@ public class AuthRestAPI {
     @Inject
     AuthPort authPort;
 
+    @Inject
+    RoutingContext context;
 
     /**
      * Get session token for user
@@ -34,7 +37,7 @@ public class AuthRestAPI {
      */
     @POST
     public Response startSession(@HeaderParam("Authentication") String authHeader) {
-        logger.info("startSession: "+authHeader);
+        String remoteAddress = context.request().remoteAddress().hostAddress();
         if (authHeader == null || authHeader.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
@@ -49,7 +52,7 @@ public class AuthRestAPI {
         String login=credentials[0];
         String password=credentials[1];
         logger.info("startSession: "+login+" "+password);
-        String token = authPort.getSessionToken(login, password);
+        String token = authPort.getSessionToken(login, password, remoteAddress);
         logger.info("startSession: "+token);
         return Response.ok().entity(token).build();
     }

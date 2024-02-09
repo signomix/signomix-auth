@@ -16,9 +16,9 @@ public class AuthPort {
     @Inject
     AuthLogic authLogic;
 
-     public String getSessionToken(String login, String password) {
+     public String getSessionToken(String login, String password, String remoteAddress) {
         logger.info("getSessionToken: " + login + " " + password);
-        return authLogic.getSessionToken(login, password);
+        return authLogic.getSessionToken(login, password, remoteAddress);
     }
 
     public String getTokenForUser(User issuer, String uid, boolean permanent) {
