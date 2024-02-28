@@ -3,6 +3,7 @@ package com.signomix.auth.application.in;
 import org.jboss.logging.Logger;
 
 import com.signomix.auth.domain.AuthLogic;
+import com.signomix.common.Token;
 import com.signomix.common.User;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -34,6 +35,10 @@ public class AuthPort {
 
     public void removeSession(String token) {
         authLogic.removeSession(token);
+    }
+
+    public Token findToken(String tokenId){
+        return authLogic.findToken(tokenId);
     }
     
     

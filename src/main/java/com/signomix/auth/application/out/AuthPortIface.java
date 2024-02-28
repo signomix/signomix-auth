@@ -10,4 +10,5 @@ public interface AuthPortIface {
     public User getUser(String token, long sessionTokenLifetime, long permanentTokenLifetime);
     public User getUserById(String uid);
     public void removeSession(String token);
+    public Token getTokenById(String tokenId);
 }

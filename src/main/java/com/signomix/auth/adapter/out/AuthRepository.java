@@ -5,6 +5,7 @@ import org.jboss.logging.Logger;
 
 import com.signomix.auth.application.out.AuthPortIface;
 import com.signomix.common.Token;
+import com.signomix.common.TokenType;
 import com.signomix.common.User;
 import com.signomix.common.db.AuthDaoIface;
 import com.signomix.common.db.IotDatabaseException;
@@ -111,7 +112,12 @@ public class AuthRepository implements AuthPortIface {
     @Override
     public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent,
             long sessionTokenLifetime, long permanentTokenLifetime) {
-        return authDao.createTokenForUser(issuer, uid, lifetime, permanent);
+        return authDao.createTokenForUser(issuer, uid, lifetime, permanent, TokenType.SESSION, null);
+    }
+
+    @Override
+    public Token getTokenById(String tokenId){
+        return authDao.findTokenById(tokenId);
     }
 
 }

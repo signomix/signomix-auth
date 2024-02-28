@@ -57,6 +57,9 @@ public class AuthRepositoryPort implements AuthPortIface {
         
     }
 
-
+    @Override
+    public Token getTokenById(String tokenId){
+        return authRepository.getTokenById(tokenId);
+    }
     
 }

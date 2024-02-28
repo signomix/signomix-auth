@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 import org.jboss.logging.Logger;
 
 import com.signomix.auth.application.out.AuthRepositoryPort;
+import com.signomix.common.Token;
 import com.signomix.common.User;
 
 import io.questdb.client.Sender;
@@ -66,6 +67,10 @@ public class AuthLogic {
         logger.info("created token: " + user.uid + " " + user.authStatus);
 
         return token;
+    }
+
+    public Token findToken(String tokenId){
+        return authRepositoryPort.getTokenById(tokenId);
     }
 
     private void saveLoginEvent(User user, String remoteAddress) {
