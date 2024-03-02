@@ -54,6 +54,10 @@ public class AuthRestAPI {
         String login=credentials[0];
         String password=credentials[1];
         logger.info("startSession: "+login+" "+password);
+        if(login.equalsIgnoreCase("public")){
+            logger.info("signing in as public is not allowed");
+            return Response.status(Response.Status.UNAUTHORIZED).build();
+        }
         String token = authPort.getSessionToken(login, password, remoteAddress);
         logger.info("startSession: "+token);
         return Response.ok().entity(token).build();
@@ -66,12 +70,13 @@ public class AuthRestAPI {
         return Response.ok().entity(newToken).build();
     } */
 
-    @GET
+   /*  @GET
     @Path("/v2/{token}")
+    //REMOVED because it enables unauthorized download of user data
     public Response getUser(@PathParam("token") String token) {
         User user=authPort.getUser(token);
         return Response.ok().entity(user).build();
-    }
+    } */
 
     @DELETE
     @Path("/v2/{token}")
