@@ -24,13 +24,13 @@ public class AuthRepository implements AuthPortIface {
     @Inject
     Logger logger;
 
-    @Inject
+/*     @Inject
     @DataSource("user")
     AgroalDataSource userDataSource;
 
     @Inject
     @DataSource("auth")
-    AgroalDataSource authDataSource;
+    AgroalDataSource authDataSource; */
 
     @Inject
     @DataSource("oltp")
@@ -50,12 +50,12 @@ public class AuthRepository implements AuthPortIface {
             userDao.setDatasource(mainDataSource);
             authDao = new com.signomix.common.tsdb.AuthDao();
             authDao.setDatasource(mainDataSource);
-        } else {
+        }/*  else {
             userDao = new com.signomix.common.db.UserDao();
             userDao.setDatasource(userDataSource);
             authDao = new com.signomix.common.db.AuthDao();
             authDao.setDatasource(authDataSource);
-        }
+        } */
         boolean ok = false;
         int counter = 0;
         int maxTries = 30;

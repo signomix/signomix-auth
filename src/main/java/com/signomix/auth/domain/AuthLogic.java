@@ -2,6 +2,7 @@ package com.signomix.auth.domain;
 
 import java.time.temporal.ChronoUnit;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import com.signomix.auth.application.out.AuthRepositoryPort;
@@ -20,6 +21,9 @@ public class AuthLogic {
 
     @Inject
     AuthRepositoryPort authRepositoryPort;
+
+    @ConfigProperty(name = "questdb.client.config")
+    String questDbConfig;
 
     // TODO: move to config
     private long sessionTokenLifetime = 30; // minutes
@@ -74,7 +78,8 @@ public class AuthLogic {
     }
 
     private void saveLoginEvent(User user, String remoteAddress) {
-        try (Sender sender = Sender.builder().address("quest:9009").build()) {
+        try (/* Sender sender = Sender.builder().address("quest:9009").build() */
+        Sender sender=Sender.fromConfig(questDbConfig)) {
             sender.table("user_events")
                     .symbol("login", user.uid)
                     .symbol("event_type","login_ok")
@@ -87,7 +92,8 @@ public class AuthLogic {
         }
     }
     private void saveLoginFailure(String login, String remoteAddress, int reason) {
-        try (Sender sender = Sender.builder().address("quest:9009").build()) {
+        try (/* Sender sender = Sender.builder().address("quest:9009").build() */
+        Sender sender=Sender.fromConfig(questDbConfig)) {
             sender.table("user_events")
                     .symbol("login", login)
                     .symbol("event_type","login_failure")
