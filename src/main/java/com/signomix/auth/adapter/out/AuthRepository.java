@@ -24,13 +24,17 @@ public class AuthRepository implements AuthPortIface {
     @Inject
     Logger logger;
 
-/*     @Inject
-    @DataSource("user")
-    AgroalDataSource userDataSource;
-
-    @Inject
-    @DataSource("auth")
-    AgroalDataSource authDataSource; */
+    /*
+     * @Inject
+     * 
+     * @DataSource("user")
+     * AgroalDataSource userDataSource;
+     * 
+     * @Inject
+     * 
+     * @DataSource("auth")
+     * AgroalDataSource authDataSource;
+     */
 
     @Inject
     @DataSource("oltp")
@@ -50,12 +54,14 @@ public class AuthRepository implements AuthPortIface {
             userDao.setDatasource(mainDataSource);
             authDao = new com.signomix.common.tsdb.AuthDao();
             authDao.setDatasource(mainDataSource);
-        }/*  else {
-            userDao = new com.signomix.common.db.UserDao();
-            userDao.setDatasource(userDataSource);
-            authDao = new com.signomix.common.db.AuthDao();
-            authDao.setDatasource(authDataSource);
-        } */
+        } /*
+           * else {
+           * userDao = new com.signomix.common.db.UserDao();
+           * userDao.setDatasource(userDataSource);
+           * authDao = new com.signomix.common.db.AuthDao();
+           * authDao.setDatasource(authDataSource);
+           * }
+           */
         boolean ok = false;
         int counter = 0;
         int maxTries = 30;
@@ -69,7 +75,7 @@ public class AuthRepository implements AuthPortIface {
                 logger.error("DB connection problem.");
                 e.printStackTrace();
             }
-            if(!ok){
+            if (!ok) {
                 counter++;
                 try {
                     Thread.sleep(1000);
@@ -116,8 +122,28 @@ public class AuthRepository implements AuthPortIface {
     }
 
     @Override
-    public Token getTokenById(String tokenId){
+    public Token getTokenById(String tokenId) {
         return authDao.findTokenById(tokenId);
+    }
+
+    @Override
+    public Token createApiToken(User issuer, long lifetimeMinutes) {
+        try {
+            return authDao.createApiToken(issuer, lifetimeMinutes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public Token getApiToken(User user) {
+        try {
+            return authDao.getApiToken(user);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

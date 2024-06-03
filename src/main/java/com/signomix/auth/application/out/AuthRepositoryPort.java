@@ -17,14 +17,17 @@ public class AuthRepositoryPort implements AuthPortIface {
     @Inject
     Logger logger;
 
-/*     @Override
-    public Token createSessionToken(User user, long lifetime) {
-        logger.info("createSessionToken: " + user.uid + " " + lifetime);
-        Token token = authRepository.createTokenForUser(user, user.uid, lifetime, false);
-        
-        logger.info("created user: " + authRepository.getUser(token.getToken()));
-        return token;
-    } */
+    /*
+     * @Override
+     * public Token createSessionToken(User user, long lifetime) {
+     * logger.info("createSessionToken: " + user.uid + " " + lifetime);
+     * Token token = authRepository.createTokenForUser(user, user.uid, lifetime,
+     * false);
+     * 
+     * logger.info("created user: " + authRepository.getUser(token.getToken()));
+     * return token;
+     * }
+     */
 
     @Override
     public void removeSession(String token) {
@@ -41,25 +44,36 @@ public class AuthRepositoryPort implements AuthPortIface {
         return authRepository.getUserById(uid);
     }
 
-
     @Override
-    public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent, long sessionTokenLifetime,
+    public Token createTokenForUser(User issuer, String uid, long lifetime, boolean permanent,
+            long sessionTokenLifetime,
             long permanentTokenLifetime) {
         User user = authRepository.getUserById(uid);
         if (user != null) {
-            Token token = authRepository.createTokenForUser(issuer, user.uid, lifetime, permanent, sessionTokenLifetime, permanentTokenLifetime);
+            Token token = authRepository.createTokenForUser(issuer, user.uid, lifetime, permanent, sessionTokenLifetime,
+                    permanentTokenLifetime);
             token.setIssuer(issuer.uid);
             return token;
         } else {
             logger.info("user not found: " + uid);
             return null;
         }
-        
+
     }
 
     @Override
-    public Token getTokenById(String tokenId){
+    public Token getTokenById(String tokenId) {
         return authRepository.getTokenById(tokenId);
     }
-    
+
+    @Override
+    public Token createApiToken(User issuer, long lifetimeMinutes) {
+        return authRepository.createApiToken(issuer, lifetimeMinutes);
+    }
+
+    @Override
+    public Token getApiToken(User user) {
+        return authRepository.getApiToken(user);
+    }
+
 }

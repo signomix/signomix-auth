@@ -16,7 +16,9 @@ import jakarta.ws.rs.HeaderParam;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 @Path("/api/auth")
 public class AuthRestAPI {
@@ -32,6 +34,7 @@ public class AuthRestAPI {
 
     /**
      * Get session token for user
+     * 
      * @param login
      * @param password
      * @return
@@ -51,32 +54,39 @@ public class AuthRestAPI {
         if (credentials.length != 2) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
-        String login=credentials[0];
-        String password=credentials[1];
-        logger.info("startSession: "+login+" "+password);
-        if(login.equalsIgnoreCase("public")){
+        String login = credentials[0];
+        String password = credentials[1];
+        logger.info("startSession: " + login + " " + password);
+        if (login.equalsIgnoreCase("public")) {
             logger.info("signing in as public is not allowed");
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         String token = authPort.getSessionToken(login, password, remoteAddress);
-        logger.info("startSession: "+token);
+        logger.info("startSession: " + token);
         return Response.ok().entity(token).build();
     }
 
-/*     @GET
-    public Response getSessionTokenForUser(@HeaderParam("token") String token, @QueryParam("uid") String uid, @QueryParam("permanent") boolean permanent) {
-        User user=authPort.getUser(token);
-        String newToken = authPort.getTokenForUser(user, uid, permanent);
-        return Response.ok().entity(newToken).build();
-    } */
+    /*
+     * @GET
+     * public Response getSessionTokenForUser(@HeaderParam("token") String
+     * token, @QueryParam("uid") String uid, @QueryParam("permanent") boolean
+     * permanent) {
+     * User user=authPort.getUser(token);
+     * String newToken = authPort.getTokenForUser(user, uid, permanent);
+     * return Response.ok().entity(newToken).build();
+     * }
+     */
 
-   /*  @GET
-    @Path("/v2/{token}")
-    //REMOVED because it enables unauthorized download of user data
-    public Response getUser(@PathParam("token") String token) {
-        User user=authPort.getUser(token);
-        return Response.ok().entity(user).build();
-    } */
+    /*
+     * @GET
+     * 
+     * @Path("/v2/{token}")
+     * //REMOVED because it enables unauthorized download of user data
+     * public Response getUser(@PathParam("token") String token) {
+     * User user=authPort.getUser(token);
+     * return Response.ok().entity(user).build();
+     * }
+     */
 
     @DELETE
     @Path("/v2/{token}")
@@ -90,36 +100,76 @@ public class AuthRestAPI {
 
     @GET
     @Path("/token/{token}")
-    public Response getToken(@PathParam("token") String tokenId){
-        logger.info("getToken: "+tokenId);
+    public Response getToken(@PathParam("token") String tokenId) {
+        logger.info("getToken: " + tokenId);
         if (tokenId == null || tokenId.isEmpty()) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
         Token token = authPort.findToken(tokenId);
-        if(token==null){
+        if (token == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.ok().entity(token).build();
     }
 
-/*     @POST
-    @Path("/register")
-    public Response registerUser(@QueryParam("login") String login, @QueryParam("password") String password) {
-        if (login == null || login.isEmpty() || password == null || password.isEmpty()) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+    @GET
+    @Path("/token")
+    public Response getApiToken(@HeaderParam("Authentication") String sessionTokenID) {
+        if (null == sessionTokenID) {
+            return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
         }
-        authPort.registerUser(login, password);
-        return Response.ok().build();
+        User user =  authPort.getUser(sessionTokenID);
+        if (null == user) {
+            return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
+        }
+        Token apiToken = authPort.getApiToken(user);
+        if (null != apiToken) {
+            return Response.ok().entity(apiToken.getTimestamp()+apiToken.getLifetime()).build();
+        }else{
+            return Response.status(Status.NOT_FOUND).entity("no API token found").build();
+        }
     }
 
     @POST
-    @Path("/resetpassword")
-    public Response resetPassword(@QueryParam("login") String login) {
-        if (login == null || login.isEmpty()) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+    @Path("/token")
+    public Response createApiToken(@HeaderParam("Authentication") String sessionTokenID,
+    @QueryParam("lifetime") long lifetime) {
+        if (null == sessionTokenID) {
+            return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
         }
-        authPort.resetPassword(login);
-        return Response.ok().build();
-    } */
+        User user =  authPort.getUser(sessionTokenID);
+        if (null == user) {
+            return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
+        }
+        Token apiToken = authPort.createApiToken(user, lifetime);
+        logger.info("created API token: " + apiToken.getToken());
+        return Response.ok().entity(apiToken.getToken()).build();
+    }
+
+    /*
+     * @POST
+     * 
+     * @Path("/register")
+     * public Response registerUser(@QueryParam("login") String
+     * login, @QueryParam("password") String password) {
+     * if (login == null || login.isEmpty() || password == null ||
+     * password.isEmpty()) {
+     * return Response.status(Response.Status.BAD_REQUEST).build();
+     * }
+     * authPort.registerUser(login, password);
+     * return Response.ok().build();
+     * }
+     * 
+     * @POST
+     * 
+     * @Path("/resetpassword")
+     * public Response resetPassword(@QueryParam("login") String login) {
+     * if (login == null || login.isEmpty()) {
+     * return Response.status(Response.Status.BAD_REQUEST).build();
+     * }
+     * authPort.resetPassword(login);
+     * return Response.ok().build();
+     * }
+     */
 
 }

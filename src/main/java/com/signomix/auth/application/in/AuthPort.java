@@ -40,6 +40,14 @@ public class AuthPort {
     public Token findToken(String tokenId){
         return authLogic.findToken(tokenId);
     }
+
+    public Token getApiToken(User user) {
+        return authLogic.getApiToken(user);
+    }
+
+    public Token createApiToken(User issuer, long lifetimeMinutes) {
+        return authLogic.createApiToken(issuer, lifetimeMinutes);
+    }
     
     
 }

@@ -77,6 +77,14 @@ public class AuthLogic {
         return authRepositoryPort.getTokenById(tokenId);
     }
 
+    public Token getApiToken(User user) {
+        return authRepositoryPort.getApiToken(user);
+    }
+
+    public Token createApiToken(User issuer, long lifetimeMinutes) {
+        return authRepositoryPort.createApiToken(issuer, lifetimeMinutes);
+    }
+
     private void saveLoginEvent(User user, String remoteAddress) {
         try (/* Sender sender = Sender.builder().address("quest:9009").build() */
         Sender sender=Sender.fromConfig(questDbConfig)) {
