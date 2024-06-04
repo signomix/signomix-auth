@@ -45,8 +45,12 @@ public class AuthPort {
         return authLogic.getApiToken(user);
     }
 
-    public Token createApiToken(User issuer, long lifetimeMinutes) {
-        return authLogic.createApiToken(issuer, lifetimeMinutes);
+    public Token createApiToken(User issuer, long lifetimeMinutes, String key) {
+        return authLogic.createApiToken(issuer, lifetimeMinutes, key);
+    }
+
+    public void removeApiToken(User issuer) {
+        authLogic.removeApiToken(issuer);
     }
     
     

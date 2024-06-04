@@ -67,13 +67,18 @@ public class AuthRepositoryPort implements AuthPortIface {
     }
 
     @Override
-    public Token createApiToken(User issuer, long lifetimeMinutes) {
-        return authRepository.createApiToken(issuer, lifetimeMinutes);
+    public Token createApiToken(User issuer, long lifetimeMinutes, String key) {
+        return authRepository.createApiToken(issuer, lifetimeMinutes, key);
     }
 
     @Override
     public Token getApiToken(User user) {
         return authRepository.getApiToken(user);
+    }
+
+    @Override
+    public void removeApiToken(User user) {
+        authRepository.removeApiToken(user);
     }
 
 }

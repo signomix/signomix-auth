@@ -11,6 +11,7 @@ public interface AuthPortIface {
     public User getUserById(String uid);
     public void removeSession(String token);
     public Token getTokenById(String tokenId);
-    public Token createApiToken(User issuer, long lifetimeMinutes);
+    public Token createApiToken(User issuer, long lifetimeMinutes, String key);
     public Token getApiToken(User user);
+    public void removeApiToken(User user);
 }

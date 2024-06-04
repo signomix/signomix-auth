@@ -127,9 +127,9 @@ public class AuthRepository implements AuthPortIface {
     }
 
     @Override
-    public Token createApiToken(User issuer, long lifetimeMinutes) {
+    public Token createApiToken(User issuer, long lifetimeMinutes, String key) {
         try {
-            return authDao.createApiToken(issuer, lifetimeMinutes);
+            return authDao.createApiToken(issuer, lifetimeMinutes, key);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -144,6 +144,11 @@ public class AuthRepository implements AuthPortIface {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public void removeApiToken(User user) {
+        authDao.removeApiToken(user);
     }
 
 }

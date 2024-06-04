@@ -81,8 +81,12 @@ public class AuthLogic {
         return authRepositoryPort.getApiToken(user);
     }
 
-    public Token createApiToken(User issuer, long lifetimeMinutes) {
-        return authRepositoryPort.createApiToken(issuer, lifetimeMinutes);
+    public Token createApiToken(User issuer, long lifetimeMinutes, String key) {
+        return authRepositoryPort.createApiToken(issuer, lifetimeMinutes, key);
+    }
+
+    public void removeApiToken(User issuer) {
+        authRepositoryPort.removeApiToken(issuer);
     }
 
     private void saveLoginEvent(User user, String remoteAddress) {

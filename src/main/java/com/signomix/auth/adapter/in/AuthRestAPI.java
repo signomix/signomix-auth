@@ -5,6 +5,7 @@ import java.util.Base64;
 import org.jboss.logging.Logger;
 
 import com.signomix.auth.application.in.AuthPort;
+import com.signomix.common.HashMaker;
 import com.signomix.common.Token;
 import com.signomix.common.User;
 
@@ -118,14 +119,14 @@ public class AuthRestAPI {
         if (null == sessionTokenID) {
             return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
         }
-        User user =  authPort.getUser(sessionTokenID);
+        User user = authPort.getUser(sessionTokenID);
         if (null == user) {
             return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
         }
         Token apiToken = authPort.getApiToken(user);
         if (null != apiToken) {
-            return Response.ok().entity(apiToken.getTimestamp()+apiToken.getLifetime()).build();
-        }else{
+            return Response.ok().entity(apiToken.getTimestamp() + apiToken.getLifetime()).build();
+        } else {
             return Response.status(Status.NOT_FOUND).entity("no API token found").build();
         }
     }
@@ -133,17 +134,35 @@ public class AuthRestAPI {
     @POST
     @Path("/token")
     public Response createApiToken(@HeaderParam("Authentication") String sessionTokenID,
-    @QueryParam("lifetime") long lifetime) {
+            @QueryParam("lifetime") long lifetime) {
         if (null == sessionTokenID) {
             return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
         }
-        User user =  authPort.getUser(sessionTokenID);
+        User user = authPort.getUser(sessionTokenID);
         if (null == user) {
             return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
         }
-        Token apiToken = authPort.createApiToken(user, lifetime);
-        logger.info("created API token: " + apiToken.getToken());
-        return Response.ok().entity(apiToken.getToken()).build();
+        String tmps = sessionTokenID + System.currentTimeMillis();
+        // String key="sgx_"+Base64.getEncoder().encodeToString(tmps.getBytes());
+        String key = "sgx_" + HashMaker.md5Strict(tmps);
+        Token apiToken = authPort.createApiToken(user, lifetime, key);
+        logger.info("created API token: " + key + " " + apiToken.getToken());
+        // return Response.ok().entity(apiToken.getToken()).build();
+        return Response.ok().entity(key).build();
+    }
+
+    @DELETE
+    @Path("/token")
+    public Response removeApiToken(@HeaderParam("Authentication") String sessionTokenID) {
+        if (null == sessionTokenID) {
+            return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
+        }
+        User user = authPort.getUser(sessionTokenID);
+        if (null == user) {
+            return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
+        }
+        authPort.removeApiToken(user);
+        return Response.ok().entity("API token removed").build();
     }
 
     /*
