@@ -47,13 +47,15 @@ public class AuthRepository implements AuthPortIface {
     String userNotAuthorizedException;
     @ConfigProperty(name = "signomix.database.type")
     String databaseType;
+    @ConfigProperty(name = "questdb.client.config")
+    String questDbConfig;
 
     void onStart(@Observes StartupEvent ev) {
         if (databaseType.equalsIgnoreCase("postgresql")) {
             userDao = new com.signomix.common.tsdb.UserDao();
             userDao.setDatasource(mainDataSource);
             authDao = new com.signomix.common.tsdb.AuthDao();
-            authDao.setDatasource(mainDataSource);
+            authDao.setDatasource(mainDataSource, questDbConfig);
         } /*
            * else {
            * userDao = new com.signomix.common.db.UserDao();
