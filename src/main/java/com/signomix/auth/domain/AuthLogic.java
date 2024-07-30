@@ -6,6 +6,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 import com.signomix.auth.application.out.AuthRepositoryPort;
+import com.signomix.auth.application.out.EventLogRepositoryPort;
 import com.signomix.common.Token;
 import com.signomix.common.User;
 
@@ -21,6 +22,9 @@ public class AuthLogic {
 
     @Inject
     AuthRepositoryPort authRepositoryPort;
+
+    @Inject
+    EventLogRepositoryPort eventLogRepositoryPort;
 
     @ConfigProperty(name = "questdb.client.config")
     String questDbConfig;
@@ -90,7 +94,8 @@ public class AuthLogic {
     }
 
     private void saveLoginEvent(User user, String remoteAddress) {
-        try (/* Sender sender = Sender.builder().address("quest:9009").build() */
+        eventLogRepositoryPort.saveLoginEvent(user, remoteAddress);
+        /* try (
         Sender sender=Sender.fromConfig(questDbConfig)) {
             sender.table("user_events")
                     .symbol("login", user.uid)
@@ -99,12 +104,14 @@ public class AuthLogic {
                     .longColumn("organization_id", user.organization)
                     .longColumn("error_code", 0)
                     .at(System.currentTimeMillis(), ChronoUnit.MILLIS);
+                    sender.flush();
         } catch (Exception e) {
             logger.error("saveLoginEvent: " + e.getMessage());
-        }
+        } */
     }
     private void saveLoginFailure(String login, String remoteAddress, int reason) {
-        try (/* Sender sender = Sender.builder().address("quest:9009").build() */
+        eventLogRepositoryPort.saveLoginFailure(login, remoteAddress, reason);
+        /* try (
         Sender sender=Sender.fromConfig(questDbConfig)) {
             sender.table("user_events")
                     .symbol("login", login)
@@ -113,8 +120,9 @@ public class AuthLogic {
                     .longColumn("organization_id", -1)
                     .longColumn("error_code", reason)
                     .at(System.currentTimeMillis(), ChronoUnit.MILLIS);
+                    sender.flush();
         } catch (Exception e) {
             logger.error("saveLoginEvent: " + e.getMessage());
-        }
+        } */
     }
 }
