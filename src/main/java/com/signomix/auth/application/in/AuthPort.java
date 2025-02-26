@@ -52,6 +52,10 @@ public class AuthPort {
     public void removeApiToken(User issuer) {
         authLogic.removeApiToken(issuer);
     }
+
+    public String getUserSessionToken(String login, String adminSessionTokenID, String remoteAddress){
+        return authLogic.getUserSessionToken(login, adminSessionTokenID, remoteAddress);
+    }
     
     
 }

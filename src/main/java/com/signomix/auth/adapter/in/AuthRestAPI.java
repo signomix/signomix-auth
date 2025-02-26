@@ -67,6 +67,19 @@ public class AuthRestAPI {
         return Response.ok().entity(token).build();
     }
 
+    @POST
+    @Path("/take/{login}")
+    public Response startUserSession(@HeaderParam("Authentication") String sessionTokenID, @PathParam("login") String login) {
+        String remoteAddress = context.request().remoteAddress().hostAddress();
+        if (sessionTokenID == null || sessionTokenID.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        String token = authPort.getUserSessionToken(login, sessionTokenID, remoteAddress);
+        authPort.removeSession(sessionTokenID);
+        logger.info("startUserSession: " + token);
+        return Response.ok().entity(token).build();
+    }
+
     /*
      * @GET
      * public Response getSessionTokenForUser(@HeaderParam("token") String

@@ -1,7 +1,5 @@
 package com.signomix.auth.domain;
 
-import java.time.temporal.ChronoUnit;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
@@ -10,7 +8,6 @@ import com.signomix.auth.application.out.EventLogRepositoryPort;
 import com.signomix.common.Token;
 import com.signomix.common.User;
 
-import io.questdb.client.Sender;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
@@ -44,6 +41,44 @@ public class AuthLogic {
         if (!user.checkPassword(password)) {
             logger.info("wrong password: " + login);
             saveLoginFailure(login, remoteAddress, 2);
+            return null;
+        }
+        if (user.authStatus == User.IS_ACTIVE || user.authStatus == User.IS_CREATED) {
+            // return authRepositoryPort.createSessionToken(user,
+            // sessionTokenLifetime).getToken();
+            saveLoginEvent(user, remoteAddress);
+            return authRepositoryPort.createTokenForUser(user, user.uid, sessionTokenLifetime, false,
+                    sessionTokenLifetime, permanentTokenLifetime).getToken();
+        } else {
+            logger.info("user not active: " + login + " status: " + user.authStatus);
+            return null;
+        }
+    }
+
+    public String getUserSessionToken(String login, String adminSessionTokenID, String remoteAddress){
+        logger.info("getUserSessionToken: " + login);
+        User admin = authRepositoryPort.getUser(adminSessionTokenID, sessionTokenLifetime, permanentTokenLifetime);
+        if (admin == null) {
+            logger.info("admin not found: " + adminSessionTokenID);
+            return null;
+        }
+        if (admin.authStatus != User.IS_ACTIVE) {
+            logger.info("admin not active: " + adminSessionTokenID + " status: " + admin.authStatus);
+            return null;
+        }
+        if(admin.type!=User.OWNER){
+            logger.info("not an service admin: " + admin.uid);
+            return null;
+        }
+        User user = authRepositoryPort.getUserById(login);
+        if (user == null) {
+            logger.info("user not found: " + login);
+            saveLoginFailure(login, remoteAddress, 1);
+            return null;
+        }
+        if(user.type==User.OWNER){
+            logger.info("login as other admin is not allowed: " + login);
+            saveLoginFailure(login, remoteAddress, 3);
             return null;
         }
         if (user.authStatus == User.IS_ACTIVE || user.authStatus == User.IS_CREATED) {
