@@ -144,6 +144,19 @@ public class AuthRestAPI {
         }
     }
 
+    @GET
+    @Path("/user")
+    public Response getUser(@HeaderParam("Authentication") String sessionTokenID) {
+        if (null == sessionTokenID) {
+            return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
+        }
+        User user = authPort.getUser(sessionTokenID);
+        if (null == user) {
+            return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
+        }
+        return Response.ok().entity(user).build();
+    }
+
     @POST
     @Path("/token")
     public Response createApiToken(@HeaderParam("Authentication") String sessionTokenID,
