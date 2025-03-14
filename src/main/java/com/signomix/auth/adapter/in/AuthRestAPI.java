@@ -57,13 +57,11 @@ public class AuthRestAPI {
         }
         String login = credentials[0];
         String password = credentials[1];
-        logger.info("startSession: " + login + " " + password);
         if (login.equalsIgnoreCase("public")) {
             logger.info("signing in as public is not allowed");
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         String token = authPort.getSessionToken(login, password, remoteAddress);
-        logger.info("startSession: " + token);
         return Response.ok().entity(token).build();
     }
 
@@ -147,6 +145,7 @@ public class AuthRestAPI {
     @GET
     @Path("/user")
     public Response getUser(@HeaderParam("Authentication") String sessionTokenID) {
+        logger.info("getUser with session token: " + sessionTokenID);
         if (null == sessionTokenID) {
             return Response.status(Status.UNAUTHORIZED).entity("not authorized").build();
         }

@@ -31,15 +31,12 @@ public class AuthLogic {
     private long permanentTokenLifetime = 10 * 365 * 24 * 60; // 10 years in minutes
 
     public String getSessionToken(String login, String password, String remoteAddress) {
-        logger.info("getSessionToken: " + login + " " + password);
         User user = authRepositoryPort.getUserById(login);
         if (user == null) {
-            logger.info("user not found: " + login);
             saveLoginFailure(login, remoteAddress, 1);
             return null;
         }
         if (!user.checkPassword(password)) {
-            logger.info("wrong password: " + login);
             saveLoginFailure(login, remoteAddress, 2);
             return null;
         }
@@ -56,7 +53,6 @@ public class AuthLogic {
     }
 
     public String getUserSessionToken(String login, String adminSessionTokenID, String remoteAddress){
-        logger.info("getUserSessionToken: " + login);
         User admin = authRepositoryPort.getUser(adminSessionTokenID, sessionTokenLifetime, permanentTokenLifetime);
         if (admin == null) {
             logger.info("admin not found: " + adminSessionTokenID);

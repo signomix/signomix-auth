@@ -18,7 +18,6 @@ public class AuthPort {
     AuthLogic authLogic;
 
      public String getSessionToken(String login, String password, String remoteAddress) {
-        logger.info("getSessionToken: " + login + " " + password);
         return authLogic.getSessionToken(login, password, remoteAddress);
     }
 
