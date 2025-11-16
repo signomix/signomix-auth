@@ -29,11 +29,11 @@ public class EventLogRepository {
         eventLogDao.setDatasource(mainDataSource);
     }
 
-    public void saveLoginEvent(User user, String remoteAddress) {
-        eventLogDao.saveLoginEvent(user, remoteAddress, 0);
+    public void saveLoginEvent(User user, String remoteAddress, boolean isAdmin) {
+        eventLogDao.saveLoginEvent(user, remoteAddress, 0, isAdmin);
     }
 
-    public void saveLoginFailure(String login, String remoteAddress, int resultCode) {
-        eventLogDao.saveLoginFailure(login, remoteAddress, resultCode);
+    public void saveLoginFailure(String login, String remoteAddress, int resultCode, boolean isAdmin) {
+        eventLogDao.saveLoginFailure(login, remoteAddress, resultCode, isAdmin);
     }
 }

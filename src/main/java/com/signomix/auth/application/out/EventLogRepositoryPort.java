@@ -14,11 +14,11 @@ public class EventLogRepositoryPort {
     EventLogRepository eventLogRepository;
     
 
-    public void saveLoginEvent(User user, String remoteAddress) {
-        eventLogRepository.saveLoginEvent(user, remoteAddress);
+    public void saveLoginEvent(User user, String remoteAddress, boolean isAdmin) {
+        eventLogRepository.saveLoginEvent(user, remoteAddress, isAdmin);
     }
 
-    public void saveLoginFailure(String login, String remoteAddress, int resultCode) {
-        eventLogRepository.saveLoginFailure(login, remoteAddress, resultCode);
+    public void saveLoginFailure(String login, String remoteAddress, int resultCode, boolean isAdmin) {
+        eventLogRepository.saveLoginFailure(login, remoteAddress, resultCode, isAdmin);
     }
 }

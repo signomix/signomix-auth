@@ -33,17 +33,17 @@ public class AuthLogic {
     public String getSessionToken(String login, String password, String remoteAddress) {
         User user = authRepositoryPort.getUserById(login);
         if (user == null) {
-            saveLoginFailure(login, remoteAddress, 1);
+            saveLoginFailure(login, remoteAddress, 1, false);
             return null;
         }
         if (!user.checkPassword(password)) {
-            saveLoginFailure(login, remoteAddress, 2);
+            saveLoginFailure(login, remoteAddress, 2, false);
             return null;
         }
         if (user.authStatus == User.IS_ACTIVE || user.authStatus == User.IS_CREATED) {
             // return authRepositoryPort.createSessionToken(user,
             // sessionTokenLifetime).getToken();
-            saveLoginEvent(user, remoteAddress);
+            saveLoginEvent(user, remoteAddress, false);
             return authRepositoryPort.createTokenForUser(user, user.uid, sessionTokenLifetime, false,
                     sessionTokenLifetime, permanentTokenLifetime).getToken();
         } else {
@@ -69,18 +69,18 @@ public class AuthLogic {
         User user = authRepositoryPort.getUserById(login);
         if (user == null) {
             logger.info("user not found: " + login);
-            saveLoginFailure(login, remoteAddress, 1);
+            saveLoginFailure(login, remoteAddress, 1, true);
             return null;
         }
         if(user.type==User.OWNER){
             logger.info("login as other admin is not allowed: " + login);
-            saveLoginFailure(login, remoteAddress, 3);
+            saveLoginFailure(login, remoteAddress, 3, true);
             return null;
         }
         if (user.authStatus == User.IS_ACTIVE || user.authStatus == User.IS_CREATED) {
             // return authRepositoryPort.createSessionToken(user,
             // sessionTokenLifetime).getToken();
-            saveLoginEvent(user, remoteAddress);
+            saveLoginEvent(user, remoteAddress, true);
             return authRepositoryPort.createTokenForUser(user, user.uid, sessionTokenLifetime, false,
                     sessionTokenLifetime, permanentTokenLifetime).getToken();
         } else {
@@ -124,8 +124,8 @@ public class AuthLogic {
         authRepositoryPort.removeApiToken(issuer);
     }
 
-    private void saveLoginEvent(User user, String remoteAddress) {
-        eventLogRepositoryPort.saveLoginEvent(user, remoteAddress);
+    private void saveLoginEvent(User user, String remoteAddress, boolean isAdmin) {
+        eventLogRepositoryPort.saveLoginEvent(user, remoteAddress, isAdmin);
         /* try (
         Sender sender=Sender.fromConfig(questDbConfig)) {
             sender.table("user_events")
@@ -140,8 +140,8 @@ public class AuthLogic {
             logger.error("saveLoginEvent: " + e.getMessage());
         } */
     }
-    private void saveLoginFailure(String login, String remoteAddress, int reason) {
-        eventLogRepositoryPort.saveLoginFailure(login, remoteAddress, reason);
+    private void saveLoginFailure(String login, String remoteAddress, int reason, boolean isAdmin) {
+        eventLogRepositoryPort.saveLoginFailure(login, remoteAddress, reason, isAdmin);
         /* try (
         Sender sender=Sender.fromConfig(questDbConfig)) {
             sender.table("user_events")
